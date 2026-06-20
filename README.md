@@ -1,8 +1,8 @@
-# Gridlock 2.0: Active Traffic Command & ML-Driven Dispatch Operations
+# Meridian: Active Traffic Command & ML-Driven Dispatch Operations
 
-![Gridlock 2.0 Banner](https://img.shields.io/badge/Status-Active-brightgreen) ![Python](https://img.shields.io/badge/Python-3.11%2B-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.103%2B-009688) ![Machine Learning](https://img.shields.io/badge/ML-XGBoost-orange)
+![Meridian Banner](https://img.shields.io/badge/Status-Active-brightgreen) ![Python](https://img.shields.io/badge/Python-3.11%2B-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.103%2B-009688) ![Machine Learning](https://img.shields.io/badge/ML-XGBoost-orange)
 
-Gridlock 2.0 represents a fundamental shift in urban traffic management—moving from passive monitoring to an active, tactical response system. Built specifically for control room operators, it serves as a central hub for predicting, managing, and resolving live traffic incidents in real-time. By bridging the gap between raw data and actionable dispatch operations, Gridlock 2.0 drastically reduces incident clearance times and minimizes compounding congestion.
+Meridian represents a fundamental shift in urban traffic management—moving from passive monitoring to an active, tactical response system. Built specifically for control room operators, it serves as a central hub for predicting, managing, and resolving live traffic incidents in real-time. By bridging the gap between raw data and actionable dispatch operations, Meridian drastically reduces incident clearance times and minimizes compounding congestion.
 
 ## Core Features
 
@@ -25,8 +25,8 @@ Follow these steps to run the application locally on your machine.
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/gridlock-impact-predictor.git
-cd gridlock-impact-predictor
+git clone https://github.com/YOUR_USERNAME/meridian-impact-predictor.git
+cd meridian-impact-predictor
 ```
 
 ### 2. Set Up a Virtual Environment
@@ -69,7 +69,7 @@ Navigate to `http://127.0.0.1:8000` in your web browser.
 To access the operator-only features (such as assigning incidents to the dispatch tracker), click the **LOGIN** button in the top right corner of the application interface and authenticate using your operator credentials (default - username:operator password:hackathon2026).
 
 ## Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/YOUR_USERNAME/gridlock-impact-predictor/issues).
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/YOUR_USERNAME/meridian-impact-predictor/issues).
 
 ## License
 This project is licensed under the MIT License.

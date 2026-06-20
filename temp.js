@@ -89,11 +89,11 @@
                 }),
                 orderCounter: orderCounter
             };
-            localStorage.setItem("gridlock_sim_state", JSON.stringify(state));
+            localStorage.setItem("meridian_sim_state", JSON.stringify(state));
         }
 
         function loadState() {
-            const stateJson = localStorage.getItem("gridlock_sim_state");
+            const stateJson = localStorage.getItem("meridian_sim_state");
             if (stateJson) {
                 try {
                     const state = JSON.parse(stateJson);
@@ -133,7 +133,7 @@
             document.getElementById("restartConfirmModal").classList.remove("flex");
         });
         document.getElementById("restartConfirm").addEventListener("click", () => {
-            localStorage.removeItem("gridlock_sim_state");
+            localStorage.removeItem("meridian_sim_state");
             window.location.reload();
         });
 
@@ -818,7 +818,7 @@
         }
 
         map.on("click", (event) => {
-            if (!localStorage.getItem("gridlock_auth")) return; // Only operators can place custom pins
+            if (!localStorage.getItem("meridian_auth")) return; // Only operators can place custom pins
             document.getElementById("latitude").value = event.latlng.lat.toFixed(6);
             document.getElementById("longitude").value = event.latlng.lng.toFixed(6);
             document.getElementById("corridor").value = detectCorridor(event.latlng.lat, event.latlng.lng);
@@ -1084,8 +1084,8 @@
         }
 
         document.getElementById("authBtn").addEventListener("click", () => {
-            if (localStorage.getItem("gridlock_auth")) {
-                localStorage.removeItem("gridlock_auth");
+            if (localStorage.getItem("meridian_auth")) {
+                localStorage.removeItem("meridian_auth");
                 applyAuthView();
                 showToast("Logged out successfully.", "info");
             } else {
@@ -1110,7 +1110,7 @@
                 
                 if (!res.ok) throw new Error("Invalid credentials");
                 const data = await res.json();
-                localStorage.setItem("gridlock_auth", data.access_token);
+                localStorage.setItem("meridian_auth", data.access_token);
                 document.getElementById("loginModal").classList.add("hidden");
                 document.getElementById("loginModal").classList.remove("flex");
                 applyAuthView();
@@ -1122,7 +1122,7 @@
         });
 
         function applyAuthView() {
-            const isAuth = !!localStorage.getItem("gridlock_auth");
+            const isAuth = !!localStorage.getItem("meridian_auth");
             document.getElementById("authBtn").textContent = isAuth ? "LOGOUT" : "LOGIN";
             
             // Toggle visibility of operator-only elements

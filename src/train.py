@@ -230,7 +230,7 @@ def run_optuna_study(
         fitted_regressor.set_params(device=device)
         return mae
 
-    study = optuna.create_study(direction="minimize", study_name="gridlock_xgb_tuning")
+    study = optuna.create_study(direction="minimize", study_name="meridian_xgb_tuning")
     study.optimize(objective, n_trials=n_trials, show_progress_bar=True)
 
     print(f"\n--- Optuna Study Complete ---")

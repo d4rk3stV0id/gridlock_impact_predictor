@@ -1,1 +1,1 @@
-"""Application package for the Gridlock Impact Predictor."""
+"""Application package for the Meridian Impact Predictor."""

@@ -31,7 +31,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="Gridlock 2.0: Live Impact Operations Center",
+    title="Meridian: Live Impact Operations Center",
     version="1.1.0",
     lifespan=lifespan,
 )

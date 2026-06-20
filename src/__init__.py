@@ -1,1 +1,1 @@
-"""Gridlock Impact Predictor source package."""
+"""Meridian Impact Predictor source package."""

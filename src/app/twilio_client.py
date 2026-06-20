@@ -13,7 +13,7 @@ async def send_dispatch_alert(incident_cause: str, severity: str, address: str, 
         return False
         
     url = f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_ACCOUNT_SID}/Messages.json"
-    message = f"🚨 GRIDLOCK DISPATCH: {severity} {incident_cause} reported at {address}. Unit ETA: {eta} mins."
+    message = f"🚨 MERIDIAN DISPATCH: {severity} {incident_cause} reported at {address}. Unit ETA: {eta} mins."
     
     payload = {
         "From": TWILIO_FROM_NUMBER,
