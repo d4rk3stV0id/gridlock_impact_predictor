@@ -67,9 +67,3 @@ Navigate to `http://127.0.0.1:8000` in your web browser.
 
 ## Operator Access
 To access the operator-only features (such as assigning incidents to the dispatch tracker), click the **LOGIN** button in the top right corner of the application interface and authenticate using your operator credentials (default - username:operator password:hackathon2026).
-
-## Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/YOUR_USERNAME/meridian-impact-predictor/issues).
-
-## License
-This project is licensed under the MIT License.
