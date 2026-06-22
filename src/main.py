@@ -14,8 +14,14 @@ from src.app.schemas import (
     PredictionRequest,
     PredictionResponse,
     DispatchAlertRequest,
+    SitRepRequest,
+    SitRepResponse,
+    CitizenReportRequest
 )
 from src.app.twilio_client import send_dispatch_alert
+from src.app.genai_client import generate_sitrep
+
+citizen_reports = []
 
 
 @asynccontextmanager
@@ -44,6 +50,15 @@ async def read_root(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
+        context={},
+    )
+
+
+@app.get("/analytics", response_class=HTMLResponse, include_in_schema=False)
+async def read_analytics(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="analytics.html",
         context={},
     )
 
@@ -86,11 +101,43 @@ async def dispatch_alert(data: DispatchAlertRequest):
             incident_cause=data.incident_cause,
             severity=data.severity,
             address=data.address,
-            eta=data.eta
+            eta=data.eta,
+            agency=data.agency
         )
         return {"status": "success" if success else "failed"}
     except Exception:
         return {"status": "failed"}
+
+
+@app.post("/api/generate-sitrep", response_model=SitRepResponse)
+async def api_generate_sitrep(data: SitRepRequest):
+    """
+    Generate an AI Situation Report.
+    """
+    text = await generate_sitrep(data)
+    return SitRepResponse(sitrep_text=text)
+
+
+@app.post("/api/incidents/report")
+async def report_incident(data: CitizenReportRequest):
+    """
+    Accept an incident report from the citizen portal.
+    """
+    import uuid
+    import datetime
+    report = data.model_dump()
+    report["id"] = str(uuid.uuid4())[:8]
+    report["timestamp"] = datetime.datetime.now().isoformat()
+    citizen_reports.append(report)
+    return {"status": "success", "id": report["id"]}
+
+
+@app.get("/api/incidents/reports")
+async def get_citizen_reports():
+    """
+    Get all unverified citizen reports.
+    """
+    return {"status": "success", "reports": citizen_reports}
 
 if __name__ == "__main__":
     import uvicorn

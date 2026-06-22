@@ -95,3 +95,26 @@ class DispatchAlertRequest(BaseModel):
     severity: str
     address: str
     eta: int | float
+    agency: str = "Police"
+
+
+class SitRepRequest(BaseModel):
+    incident_type: str
+    location: str
+    severity: str
+    clearance_time: float
+    weather: str
+    notes: str
+
+
+class SitRepResponse(BaseModel):
+    sitrep_text: str
+
+
+class CitizenReportRequest(BaseModel):
+    latitude: float
+    longitude: float
+    incident_type: str
+    severity: str
+    description: str
+    image_url: str | None = None

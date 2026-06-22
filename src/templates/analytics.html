@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meridian - Analytics Dashboard</title>
+    <link rel="stylesheet" href="/static/output.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-slate-900 font-sans text-slate-100 p-5">
+    <header class="border-b border-slate-800 bg-slate-950 px-5 py-4 shadow-md mb-6 rounded">
+        <div class="mx-auto flex max-w-[96%] items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold text-emerald-400">MERIDIAN ANALYTICS</h1>
+                <p class="text-xs uppercase text-slate-500">Historical Insights & System Performance</p>
+            </div>
+            <a href="/" class="border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-bold uppercase text-slate-300 hover:bg-slate-700 transition shadow-md">
+                &larr; Back to Control Room
+            </a>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-[96%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- KPI Cards -->
+        <div class="border border-slate-800 bg-slate-950 p-5 shadow-xl flex flex-col items-center justify-center">
+            <span class="text-slate-500 text-xs uppercase font-bold tracking-widest">Avg Clearance Time</span>
+            <span class="text-4xl text-emerald-400 font-mono mt-2">42.5</span>
+            <span class="text-slate-400 text-sm mt-1">minutes</span>
+        </div>
+        <div class="border border-slate-800 bg-slate-950 p-5 shadow-xl flex flex-col items-center justify-center">
+            <span class="text-slate-500 text-xs uppercase font-bold tracking-widest">High Risk Incidents</span>
+            <span class="text-4xl text-red-400 font-mono mt-2">24%</span>
+            <span class="text-slate-400 text-sm mt-1">of all logged events</span>
+        </div>
+        <div class="border border-slate-800 bg-slate-950 p-5 shadow-xl flex flex-col items-center justify-center">
+            <span class="text-slate-500 text-xs uppercase font-bold tracking-widest">Automated Dispatches</span>
+            <span class="text-4xl text-blue-400 font-mono mt-2">1,204</span>
+            <span class="text-slate-400 text-sm mt-1">last 30 days</span>
+        </div>
+
+        <!-- Charts -->
+        <div class="border border-slate-800 bg-slate-950 p-5 shadow-xl lg:col-span-2">
+            <h3 class="text-sm font-semibold uppercase text-slate-300 border-b border-slate-800 pb-2 mb-4">Clearance Time by Incident Type</h3>
+            <canvas id="barChart" height="100"></canvas>
+        </div>
+
+        <div class="border border-slate-800 bg-slate-950 p-5 shadow-xl">
+            <h3 class="text-sm font-semibold uppercase text-slate-300 border-b border-slate-800 pb-2 mb-4">Incident Severity Distribution</h3>
+            <canvas id="pieChart" height="200"></canvas>
+        </div>
+
+        <div class="border border-slate-800 bg-slate-950 p-5 shadow-xl lg:col-span-3">
+            <h3 class="text-sm font-semibold uppercase text-slate-300 border-b border-slate-800 pb-2 mb-4">Weekly Congestion Volume Trends</h3>
+            <canvas id="lineChart" height="80"></canvas>
+        </div>
+
+    </main>
+
+    <script>
+        // Use realistic mock data for the hackathon demo
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Vehicle Breakdown', 'Accident', 'Water Logging', 'Tree Fall', 'Construction'],
+                datasets: [{
+                    label: 'Avg Clearance Time (mins)',
+                    data: [25, 55, 120, 90, 45],
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                },
+                plugins: { legend: { labels: { color: '#cbd5e1' } } }
+            }
+        });
+
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Low Impact', 'Moderate Delay', 'Severe Congestion Risk'],
+                datasets: [{
+                    data: [45, 31, 24],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)', // Emerald
+                        'rgba(245, 158, 11, 0.8)', // Amber
+                        'rgba(239, 68, 68, 0.8)'   // Red
+                    ],
+                    borderColor: '#0f172a',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } }
+            }
+        });
+
+        const ctxLine = document.getElementById('lineChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Reported Incidents',
+                    data: [120, 150, 140, 200, 280, 190, 110],
+                    borderColor: 'rgba(59, 130, 246, 1)', // Blue
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                },
+                plugins: { legend: { labels: { color: '#cbd5e1' } } }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,21 +1,32 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Meridian - Live Control Room</title>
+    <title>Meridian - Traffic Operations Dashboard</title>
     <link rel="stylesheet" href="/static/output.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <style>
-        #map { width: 100%; height: 520px; }
-        .leaflet-popup-content { margin: 12px 14px; }
+        #map {
+            width: 100%;
+            height: 520px;
+        }
+
+        .leaflet-popup-content {
+            margin: 12px 14px;
+        }
     </style>
 </head>
+
 <body class="min-h-screen bg-slate-900 font-sans text-slate-100">
     <header class="border-b border-slate-800 bg-slate-950 px-5 py-4 shadow-md">
         <div class="mx-auto flex max-w-[96%] flex-wrap items-center justify-between gap-3">
@@ -26,14 +37,19 @@
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-2 mr-2">
                     <span id="feedDot" class="h-2.5 w-2.5 bg-slate-500 rounded-full"></span>
-                    <span id="feedStatus" class="text-[10px] font-bold uppercase text-slate-400">LIVE FEED STANDBY</span>
+                    <span id="feedStatus" class="text-[10px] font-bold uppercase text-slate-400">LIVE FEED
+                        STANDBY</span>
                 </div>
-                <button type="button" id="restartSimBtn" class="border border-red-800 bg-red-950/40 px-3 py-1 text-[10px] font-bold text-red-400 hover:bg-red-900/60 transition" title="Wipe all data and restart">
+                <button type="button" id="restartSimBtn"
+                    class="border border-red-800 bg-red-950/40 px-3 py-1 text-[10px] font-bold text-red-400 hover:bg-red-900/60 transition"
+                    title="Wipe all data and restart">
                     RESTART SIM
                 </button>
                 <div class="flex items-center text-xs">
-                    <label for="weatherContext" class="mr-2 font-semibold text-slate-400 uppercase">Weather Context:</label>
-                    <select id="weatherContext" class="border border-slate-700 bg-slate-900 px-2 py-1 text-slate-200 outline-none">
+                    <label for="weatherContext" class="mr-2 font-semibold text-slate-400 uppercase">Weather
+                        Context:</label>
+                    <select id="weatherContext"
+                        class="border border-slate-700 bg-slate-900 px-2 py-1 text-slate-200 outline-none">
                         <option value="auto">Auto (Live)</option>
                         <option value="clear">Clear</option>
                         <option value="rain">Rain</option>
@@ -42,279 +58,426 @@
                     </select>
                     <span id="autoWeatherDisplay" class="ml-2 text-[10px] text-slate-500"></span>
                 </div>
-                <button type="button" id="authBtn" class="border border-slate-700 bg-slate-800 px-4 py-1 text-xs font-bold uppercase text-emerald-400 hover:bg-slate-700 transition shadow-md">
+                <button type="button" id="authBtn"
+                    class="border border-slate-700 bg-slate-800 px-4 py-1 text-xs font-bold uppercase text-emerald-400 hover:bg-slate-700 transition shadow-md">
                     LOGIN
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="mx-auto grid max-w-[96%] grid-cols-1 gap-5 p-5 lg:grid-cols-12">
-        <aside class="border border-slate-800 bg-slate-950 p-5 shadow-xl lg:col-span-3 operator-only">
-            <h2 class="border-b border-slate-800 pb-3 text-sm font-semibold uppercase text-slate-300">
-                Evaluate and Log Incident
-            </h2>
+    <main class="mx-auto max-w-[96%] flex flex-col gap-6 p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+            <!-- OPERATOR TOOLKIT -->
+            <aside class="operator-only border border-slate-800 bg-slate-950 p-5 shadow-xl lg:col-span-3"
+                style="align-self: flex-end;">
+                <h2 class="border-b border-slate-800 pb-3 text-sm font-semibold uppercase text-slate-300">
+                    Evaluate & Log Incident
+                </h2>
 
-            <form id="predictForm" class="mt-4 flex flex-col gap-4">
-                <div class="grid grid-cols-2 gap-2">
-                    <label class="text-xs font-medium text-slate-400">
-                        Latitude
-                        <input id="latitude" type="number" step="any" min="-90" max="90"
-                            value="12.9716" required
-                            class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500">
-                    </label>
-                    <label class="text-xs font-medium text-slate-400">
-                        Longitude
-                        <input id="longitude" type="number" step="any" min="-180" max="180"
-                            value="77.5946" required
-                            class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500">
-                    </label>
-                </div>
+                <form id="predictForm" class="mt-4 flex flex-col gap-4">
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <label class="text-xs font-medium text-slate-400">
+                            Latitude
+                            <input id="latitude" type="number" step="any" min="-90" max="90" value="12.9716" required
+                                class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500">
+                        </label>
+                        <label class="text-xs font-medium text-slate-400">
+                            Longitude
+                            <input id="longitude" type="number" step="any" min="-180" max="180" value="77.5946" required
+                                class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500">
+                        </label>
+                    </div>
 
-                <label class="text-xs font-medium text-slate-400">
-                    Vehicle Classification
-                    <select id="vehicleType" class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
-                        <option value="none">None (Non-vehicular)</option>
-                        <option value="private_car" selected>Private Car</option>
-                        <option value="heavy_vehicle">Heavy Vehicle</option>
-                        <option value="truck">Truck</option>
-                        <option value="lcv">Light Commercial Vehicle</option>
-                        <option value="bmtc_bus">BMTC Bus</option>
-                        <option value="private_bus">Private Bus</option>
-                        <option value="ksrtc_bus">KSRTC Bus</option>
-                        <option value="auto">Auto Rickshaw</option>
-                        <option value="taxi">Taxi</option>
-                        <option value="others">Other</option>
-                    </select>
-                </label>
-
-                <label class="text-xs font-medium text-slate-400">
-                    Corridor Segment
-                    <select id="corridor" class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
-                        <option value="Non-corridor" selected>Non-corridor</option>
-                        <option value="Tumkur Road">Tumkur Road</option>
-                        <option value="ORR East 1">ORR East 1</option>
-                        <option value="ORR East 2">ORR East 2</option>
-                        <option value="CBD 2">CBD 2</option>
-                        <option value="ORR West 1">ORR West 1</option>
-                        <option value="ORR North 1">ORR North 1</option>
-                        <option value="Old Madras Road">Old Madras Road</option>
-                        <option value="Bellary Road 2">Bellary Road 2</option>
-                        <option value="Bellary Road 1">Bellary Road 1</option>
-                        <option value="Hosur Road">Hosur Road</option>
-                        <option value="Bannerghata Road">Bannerghata Road</option>
-                        <option value="ORR North 2">ORR North 2</option>
-                        <option value="Magadi Road">Magadi Road</option>
-                        <option value="IRR(Thanisandra road)">IRR (Thanisandra road)</option>
-                        <option value="Mysore Road">Mysore Road</option>
-                        <option value="West of Chord Road">West of Chord Road</option>
-                    </select>
-                </label>
-
-                <div class="grid grid-cols-2 gap-2">
-                    <label class="text-xs font-medium text-slate-400">
-                        Priority
-                        <select id="priority" class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
-                            <option value="High">High</option>
-                            <option value="Low" selected>Low</option>
-                        </select>
-                    </label>
-                    <label class="text-xs font-medium text-slate-400">
-                        Root Cause
-                        <select id="eventCause" class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
-                            <option value="vehicle_breakdown" selected>Vehicle Breakdown</option>
+                    <label class="text-xs font-medium text-slate-400 mt-4 block">
+                        Vehicle Classification
+                        <select id="vehicleType"
+                            class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
+                            <option value="none">None (Non-vehicular)</option>
+                            <option value="private_car" selected>Private Car</option>
+                            <option value="heavy_vehicle">Heavy Vehicle</option>
+                            <option value="truck">Truck</option>
+                            <option value="lcv">Light Commercial Vehicle</option>
+                            <option value="bmtc_bus">BMTC Bus</option>
+                            <option value="private_bus">Private Bus</option>
+                            <option value="ksrtc_bus">KSRTC Bus</option>
+                            <option value="auto">Auto Rickshaw</option>
+                            <option value="taxi">Taxi</option>
                             <option value="others">Other</option>
-                            <option value="tree_fall">Tree Fall</option>
-                            <option value="accident">Accident</option>
-                            <option value="public_event">Public Event</option>
-                            <option value="water_logging">Water Logging</option>
-                            <option value="pot_holes">Potholes</option>
-                            <option value="congestion">Congestion</option>
-                            <option value="construction">Construction</option>
-                            <option value="road_conditions">Road Conditions</option>
                         </select>
                     </label>
-                </div>
 
-                <label class="text-xs font-medium text-slate-400">
-                    Incident Operator Notes
-                    <textarea id="description" rows="3" required maxlength="5000"
-                        placeholder="Describe the scene and traffic conditions..."
-                        class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500"></textarea>
-                </label>
+                    <label class="text-xs font-medium text-slate-400 mt-4 block">
+                        Corridor Segment
+                        <select id="corridor"
+                            class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
+                            <option value="Non-corridor" selected>Non-corridor</option>
+                            <option value="Tumkur Road">Tumkur Road</option>
+                            <option value="ORR East 1">ORR East 1</option>
+                            <option value="ORR East 2">ORR East 2</option>
+                            <option value="CBD 2">CBD 2</option>
+                            <option value="ORR West 1">ORR West 1</option>
+                            <option value="ORR North 1">ORR North 1</option>
+                            <option value="Old Madras Road">Old Madras Road</option>
+                            <option value="Bellary Road 2">Bellary Road 2</option>
+                            <option value="Bellary Road 1">Bellary Road 1</option>
+                            <option value="Hosur Road">Hosur Road</option>
+                            <option value="Bannerghata Road">Bannerghata Road</option>
+                            <option value="ORR North 2">ORR North 2</option>
+                            <option value="Magadi Road">Magadi Road</option>
+                            <option value="IRR(Thanisandra road)">IRR (Thanisandra road)</option>
+                            <option value="Mysore Road">Mysore Road</option>
+                            <option value="West of Chord Road">West of Chord Road</option>
+                        </select>
+                    </label>
 
-                <button id="submitButton" type="submit"
-                    class="mt-1 w-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-400">
-                    Evaluate and Log to Ledger
-                </button>
-            </form>
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <label class="text-xs font-medium text-slate-400">
+                            Priority
+                            <select id="priority"
+                                class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
+                                <option value="High">High</option>
+                                <option value="Low" selected>Low</option>
+                            </select>
+                        </label>
+                        <label class="text-xs font-medium text-slate-400">
+                            Root Cause
+                            <select id="eventCause"
+                                class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
+                                <option value="vehicle_breakdown" selected>Vehicle Breakdown</option>
+                                <option value="others">Other</option>
+                                <option value="tree_fall">Tree Fall</option>
+                                <option value="accident">Accident</option>
+                                <option value="public_event">Public Event</option>
+                                <option value="water_logging">Water Logging</option>
+                                <option value="pot_holes">Potholes</option>
+                                <option value="congestion">Congestion</option>
+                                <option value="construction">Construction</option>
+                                <option value="road_conditions">Road Conditions</option>
+                            </select>
+                        </label>
+                    </div>
 
-            <div id="resultsPanel" class="mt-4 hidden border-t border-slate-800 pt-4">
-                <div class="flex items-center justify-between gap-4">
-                    <span class="text-xs uppercase text-slate-500">Predicted Clear Time</span>
-                    <strong id="predictedMinutes" class="text-lg text-emerald-400">--</strong>
-                </div>
-                <div class="mt-2 flex items-center justify-between gap-4">
-                    <span class="text-xs uppercase text-slate-500">Location Address</span>
-                    <strong id="addressText" class="text-xs text-slate-300 text-right truncate max-w-[200px]" title="--">--</strong>
-                </div>
-                <div class="mt-2 flex items-center justify-between gap-4">
-                    <span class="text-xs uppercase text-slate-500">Dispatch ETA</span>
-                    <strong id="dispatchText" class="text-xs text-blue-400 text-right">--</strong>
-                </div>
-                <div class="mt-2 flex items-center justify-between gap-4">
-                    <span class="text-xs uppercase text-slate-500">Congestion Risk Assessment</span>
-                    <strong id="severityText" class="border px-2 py-1 text-right text-xs">--</strong>
-                </div>
-                <div class="mt-2 flex items-center justify-between gap-4 hidden" id="weatherAlertContainer">
-                    <span class="text-xs uppercase text-slate-500">Weather Alert</span>
-                    <strong id="weatherAlertText" class="text-xs text-red-400">--</strong>
-                </div>
-                <div class="mt-3 rounded border border-slate-700 bg-slate-900 p-2">
-                    <span class="block text-[10px] font-semibold uppercase text-slate-500">Action Advisory</span>
-                    <p id="advisoryText" class="mt-1 text-xs text-slate-300">--</p>
-                </div>
-            </div>
+                    <label class="text-xs font-medium text-slate-400 mt-4 block">
+                        Incident Operator Notes
+                        <textarea id="description" rows="3" required maxlength="5000"
+                            placeholder="Describe the scene and traffic conditions..."
+                            class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500"></textarea>
+                    </label>
 
-            <div id="analyticsHub" class="mt-5 border-t border-slate-800 pt-4">
-                <h3 class="text-xs font-semibold uppercase text-slate-300 border-b border-slate-800 pb-2">System Analytics Overview Hub</h3>
-                
-                <div class="mt-3">
-                    <span class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Top Chokepoint Zones</span>
-                    <ul id="chokepointsList" class="text-xs text-slate-300 space-y-1">
-                        <li>--</li>
-                    </ul>
-                </div>
-                
-                <div class="mt-4">
-                    <span class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Resource Demand Distribution</span>
-                    <div id="resourceDistribution" class="text-xs text-slate-300 space-y-1.5">
-                        --
+                    <button id="submitButton" type="submit"
+                        class="mt-1 w-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-400">
+                        Evaluate and Log to Ledger
+                    </button>
+                </form>
+
+                <div id="resultsPanel" class="mt-4 hidden border-t border-slate-800 pt-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-xs uppercase text-slate-500">Predicted Clear Time</span>
+                        <strong id="predictedMinutes" class="text-lg text-emerald-400">--</strong>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between gap-4">
+                        <span class="text-xs uppercase text-slate-500">Location Address</span>
+                        <strong id="addressText" class="text-xs text-slate-300 text-right truncate max-w-[200px]"
+                            title="--">--</strong>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between gap-4">
+                        <span class="text-xs uppercase text-slate-500">Dispatch ETA</span>
+                        <strong id="dispatchText" class="text-xs text-blue-400 text-right">--</strong>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between gap-4">
+                        <span class="text-xs uppercase text-slate-500">Congestion Risk Assessment</span>
+                        <strong id="severityText" class="border px-2 py-1 text-right text-xs">--</strong>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between gap-4 hidden" id="weatherAlertContainer">
+                        <span class="text-xs uppercase text-slate-500">Weather Alert</span>
+                        <strong id="weatherAlertText" class="text-xs text-red-400">--</strong>
+                    </div>
+                    <div class="mt-3 rounded border border-slate-700 bg-slate-900 p-2">
+                        <span class="block text-[10px] font-semibold uppercase text-slate-500">Action Advisory</span>
+                        <p id="advisoryText" class="mt-1 text-xs text-slate-300">--</p>
                     </div>
                 </div>
-            </div>
-        </aside>
 
-        <section class="flex min-w-0 flex-col gap-4 lg:col-span-9">
-            <div class="flex items-end justify-between gap-4">
-                <div>
-                    <h2 class="text-sm font-semibold uppercase text-slate-300">Active Incident Broadcast</h2>
-                    <p class="mt-1 text-xs text-slate-500">Historical events replayed through the impact model</p>
+                <div id="analyticsHub" class="mt-5 border-t border-slate-800 pt-4">
+                    <h3 class="text-xs font-semibold uppercase text-slate-300 border-b border-slate-800 pb-2">System
+                        Analytics Overview Hub</h3>
+
+                    <div class="mt-3">
+                        <span class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Top Chokepoint
+                            Zones</span>
+                        <ul id="chokepointsList" class="text-xs text-slate-300 space-y-1">
+                            <li>--</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4">
+                        <span class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Resource Demand
+                            Distribution</span>
+                        <div id="resourceDistribution" class="text-xs text-slate-300 space-y-1.5">
+                            --
+                        </div>
+                    </div>
                 </div>
-                <button id="refreshFeed" type="button"
-                    class="border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-medium text-slate-300 hover:border-emerald-600 hover:text-emerald-400">
-                    Refresh Feed
-                </button>
-            </div>
+            </aside>
 
-            <div id="liveAlerts" class="flex flex-wrap gap-2 max-h-[340px] overflow-y-auto pr-2 transition-opacity duration-300">
-                <p class="border border-slate-800 bg-slate-950 p-5 text-center text-xs text-slate-500 w-[calc(33.333%-6px)]">
-                    Connecting to simulation feed...
-                </p>
-            </div>
+            <!-- CITIZEN PORTAL (LOGGED OUT VIEW) -->
+            <aside class="citizen-only border border-slate-800 bg-slate-950 p-5 shadow-xl lg:col-span-3">
+                <h2 class="border-b border-slate-800 pb-3 text-sm font-semibold uppercase text-slate-300">
+                    Citizen Reporting Portal
+                </h2>
+                <p class="text-xs text-slate-400 mt-2 mb-4">Report an incident to the Meridian control room.</p>
 
-            <div class="border border-slate-800 bg-slate-950 p-3 shadow-xl relative">
-                <div class="absolute bottom-6 left-4 z-[2000] flex flex-col gap-2">
-                    <label class="flex items-center gap-2 bg-slate-900/90 border border-slate-700 px-2 py-1 text-[10px] uppercase font-semibold text-slate-300 shadow-md cursor-pointer hover:bg-slate-800 transition">
-                        <input type="checkbox" id="toggleGlobalView" class="accent-emerald-500">
-                        Session Incidents View
+                <form id="citizenReportForm" class="flex flex-col gap-4">
+                    <label class="text-xs font-medium text-slate-400">
+                        Incident Type
+                        <select id="citizenIncidentType"
+                            class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
+                            <option value="accident">Accident</option>
+                            <option value="vehicle_breakdown">Vehicle Breakdown</option>
+                            <option value="water_logging">Water Logging</option>
+                            <option value="potholes">Potholes</option>
+                            <option value="fire">Fire / Hazard</option>
+                        </select>
                     </label>
-                    <label class="flex items-center gap-2 bg-slate-900/90 border border-slate-700 px-2 py-1 text-[10px] uppercase font-semibold text-slate-300 shadow-md cursor-pointer hover:bg-slate-800 transition">
-                        <input type="checkbox" id="toggleHeatmap" class="accent-emerald-500">
-                        Incident Intensity Heatmap
-                    </label>
-                    <label class="flex items-center gap-2 bg-slate-900/90 border border-slate-700 px-2 py-1 text-[10px] uppercase font-semibold text-slate-300 shadow-md cursor-pointer hover:bg-slate-800 transition">
-                        <input type="checkbox" id="toggleActionPoints" class="accent-emerald-500" checked>
-                        Recommended Action Points
-                    </label>
-                </div>
-                <div class="absolute top-4 right-4 z-[2000]">
-                    <button id="resetMapBtn" class="bg-slate-900/80 border border-slate-700 text-[10px] uppercase font-semibold px-2 py-1 text-slate-300 hover:text-emerald-400 hover:bg-slate-900 transition shadow-md">
-                        Reset Map View
-                    </button>
-                </div>
-                <div id="map"></div>
-            </div>
 
-            <div class="border border-slate-800 bg-slate-950 p-4 shadow-xl">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <h3 class="text-sm font-semibold uppercase text-slate-300">
-                        Regional Operations Log Ledger (Session History)
-                    </h3>
-                    <div class="flex items-center gap-2">
-                        <select id="filterRisk" class="border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-300 outline-none">
-                            <option value="All">All Risks</option>
+                    <label class="text-xs font-medium text-slate-400">
+                        Severity
+                        <select id="citizenSeverity"
+                            class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200">
                             <option value="Low Impact">Low Impact</option>
                             <option value="Moderate Delay">Moderate Delay</option>
-                            <option value="Severe Congestion Risk">Severe Congestion Risk</option>
+                            <option value="Severe Congestion Risk">Severe Risk</option>
                         </select>
-                        <button id="resetControlsBtn" type="button" class="border border-slate-700 bg-slate-800 px-2 py-1 text-[10px] text-slate-300 hover:text-white transition">Reset Controls</button>
+                    </label>
+
+                    <label class="text-xs font-medium text-slate-400">
+                        Description
+                        <textarea id="citizenDescription" rows="3" required placeholder="Describe what you see..."
+                            class="mt-1 w-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500"></textarea>
+                    </label>
+
+                    <p class="text-[10px] text-slate-500 italic">* Location will be automatically captured when you
+                        submit.</p>
+
+                    <button type="submit"
+                        class="w-full bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">
+                        Submit Report
+                    </button>
+                </form>
+                <div id="citizenSuccess"
+                    class="hidden mt-4 p-3 bg-emerald-900/50 border border-emerald-800 text-emerald-400 text-xs font-semibold text-center">
+                    Report Submitted Successfully!
+                </div>
+            </aside>
+
+            <section class="flex min-w-0 flex-col gap-4 lg:col-span-9">
+                <div class="flex items-end justify-between gap-4">
+                    <div>
+                        <h2 class="text-sm font-semibold uppercase text-slate-300">Active Incident Broadcast</h2>
+                        <p class="mt-1 text-xs text-slate-500">Historical events replayed through the impact model</p>
+                    </div>
+                    <button id="refreshFeed" type="button"
+                        class="border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-medium text-slate-300 hover:border-emerald-600 hover:text-emerald-400">
+                        Refresh Feed
+                    </button>
+                </div>
+
+                <div id="liveAlerts"
+                    class="flex flex-wrap gap-2 max-h-[340px] overflow-y-auto pr-2 transition-opacity duration-300">
+                    <p
+                        class="border border-slate-800 bg-slate-950 p-5 text-center text-xs text-slate-500 w-[calc(33.333%-6px)]">
+                        Connecting to simulation feed...
+                    </p>
+                </div>
+
+                <div class="border border-slate-800 bg-slate-950 p-3 shadow-xl relative">
+                    <div class="absolute bottom-6 left-4 z-[2000] flex flex-col gap-2">
+                        <label
+                            class="flex items-center gap-2 bg-slate-900/90 border border-slate-700 px-2 py-1 text-[10px] uppercase font-semibold text-slate-300 shadow-md cursor-pointer hover:bg-slate-800 transition">
+                            <input type="checkbox" id="toggleGlobalView" class="accent-emerald-500">
+                            Session Incidents View
+                        </label>
+                        <label
+                            class="flex items-center gap-2 bg-slate-900/90 border border-slate-700 px-2 py-1 text-[10px] uppercase font-semibold text-slate-300 shadow-md cursor-pointer hover:bg-slate-800 transition">
+                            <input type="checkbox" id="toggleHeatmap" class="accent-emerald-500">
+                            Incident Intensity Heatmap
+                        </label>
+                        <label
+                            class="flex items-center gap-2 bg-slate-900/90 border border-slate-700 px-2 py-1 text-[10px] uppercase font-semibold text-slate-300 shadow-md cursor-pointer hover:bg-slate-800 transition">
+                            <input type="checkbox" id="toggleActionPoints" class="accent-emerald-500" checked>
+                            Recommended Action Points
+                        </label>
+                    </div>
+                    <div class="absolute top-4 right-4 z-[2000]">
+                        <button id="resetMapBtn"
+                            class="bg-slate-900/80 border border-slate-700 text-[10px] uppercase font-semibold px-2 py-1 text-slate-300 hover:text-emerald-400 hover:bg-slate-900 transition shadow-md">
+                            Reset Map View
+                        </button>
+                    </div>
+                    <div id="map"></div>
+                </div>
+
+                <div class="border border-slate-800 bg-slate-950 p-4 shadow-xl operator-only">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <h3 class="text-sm font-semibold uppercase text-slate-300">
+                            Regional Operations Log Ledger (Session History)
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <select id="filterRisk"
+                                class="border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] text-slate-300 outline-none">
+                                <option value="All">All Risks</option>
+                                <option value="Low Impact">Low Impact</option>
+                                <option value="Moderate Delay">Moderate Delay</option>
+                                <option value="Severe Congestion Risk">Severe Congestion Risk</option>
+                            </select>
+                            <button id="resetControlsBtn" type="button"
+                                class="border border-slate-700 bg-slate-800 px-2 py-1 text-[10px] text-slate-300 hover:text-white transition">Reset
+                                Controls</button>
+                        </div>
+                    </div>
+                    <div class="mt-3 max-h-60 overflow-y-auto-2 pr-2">
+                        <table class="w-full text-left text-xs">
+                            <thead class="sticky top-0 bg-slate-950">
+                                <tr class="border-b border-slate-800 text-slate-500">
+                                    <th class="pb-2 pr-3 font-medium text-left"><button data-sort="id"
+                                            class="ledger-header hover:text-emerald-400">Timestamp/ID <span
+                                                class="sort-arrow"></span></button></th>
+                                    <th class="pb-2 pr-3 font-medium text-left"><button data-sort="type"
+                                            class="ledger-header hover:text-emerald-400">Incident Type <span
+                                                class="sort-arrow"></span></button></th>
+                                    <th class="pb-2 pr-3 font-medium text-left"><button data-sort="minutes"
+                                            class="ledger-header hover:text-emerald-400">Clear Time <span
+                                                class="sort-arrow"></span></button></th>
+                                    <th class="pb-2 pr-3 font-medium text-left"><button data-sort="severity"
+                                            class="ledger-header hover:text-emerald-400">Risk Level <span
+                                                class="sort-arrow"></span></button></th>
+                                    <th class="pb-2 pr-3 font-medium text-left">Action Advisory</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledgerBody" class="divide-y divide-slate-800/50">
+                                <!-- Rows will be injected here -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="mt-3 max-h-60 overflow-y-auto pr-2">
-                    <table class="w-full text-left text-xs">
-                        <thead class="sticky top-0 bg-slate-950">
-                            <tr class="border-b border-slate-800 text-slate-500">
-                                <th class="pb-2 pr-3 font-medium text-left"><button data-sort="id" class="ledger-header hover:text-emerald-400">Timestamp/ID <span class="sort-arrow"></span></button></th>
-                                <th class="pb-2 pr-3 font-medium text-left"><button data-sort="type" class="ledger-header hover:text-emerald-400">Incident Type <span class="sort-arrow"></span></button></th>
-                                <th class="pb-2 pr-3 font-medium text-left"><button data-sort="minutes" class="ledger-header hover:text-emerald-400">Clear Time <span class="sort-arrow"></span></button></th>
-                                <th class="pb-2 pr-3 font-medium text-left"><button data-sort="severity" class="ledger-header hover:text-emerald-400">Risk Level <span class="sort-arrow"></span></button></th>
-                                <th class="pb-2 pr-3 font-medium text-left">Action Advisory</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ledgerBody" class="divide-y divide-slate-800/50">
-                            <!-- Rows will be injected here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            </section>
+        </div>
 
+        <!-- FULL-WIDTH BOTTOM SECTION (Kanban + Analytics) -->
+        <div class="flex flex-col gap-6 w-full">
             <div class="border border-slate-800 bg-slate-950 p-4 shadow-xl operator-only">
                 <h3 class="border-b border-slate-800 pb-2 text-sm font-semibold uppercase text-slate-300">
                     Incident Tactical Tracker Workspace
                 </h3>
-                <div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3 min-h-60">
+                <div class="mt-3 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-60 pb-4">
+                    <div class="flex flex-col gap-2 bg-slate-900 p-2 kanban-col" data-phase="-1">
+                        <span
+                            class="text-[10px] uppercase font-bold text-slate-400 border-b border-slate-700 pb-1">Unverified
+                            (Citizen)</span>
+                        <div id="kanbanUnverified" class="flex flex-col gap-2 min-h-16 kanban-drop"></div>
+                    </div>
                     <div class="flex flex-col gap-2 bg-slate-900 p-2 kanban-col" data-phase="0">
-                        <span class="text-[10px] uppercase font-bold text-amber-500 border-b border-slate-700 pb-1">Awaiting Dispatch</span>
+                        <span
+                            class="text-[10px] uppercase font-bold text-amber-500 border-b border-slate-700 pb-1">Awaiting
+                            Dispatch</span>
                         <div id="kanbanAwaiting" class="flex flex-col gap-2 min-h-16 kanban-drop"></div>
                     </div>
                     <div class="flex flex-col gap-2 bg-slate-900 p-2 kanban-col" data-phase="1">
-                        <span class="text-[10px] uppercase font-bold text-blue-400 border-b border-slate-700 pb-1">Response Unit Active</span>
+                        <span
+                            class="text-[10px] uppercase font-bold text-blue-400 border-b border-slate-700 pb-1">Response
+                            Unit Active</span>
                         <div id="kanbanActive" class="flex flex-col gap-2 min-h-16 kanban-drop"></div>
                     </div>
                     <div class="flex flex-col gap-2 bg-slate-900 p-2 kanban-col" data-phase="2">
-                        <span class="text-[10px] uppercase font-bold text-emerald-500 border-b border-slate-700 pb-1">Incident Resolved</span>
+                        <span
+                            class="text-[10px] uppercase font-bold text-emerald-500 border-b border-slate-700 pb-1">Incident
+                            Resolved</span>
                         <div id="kanbanResolved" class="flex flex-col gap-2 min-h-16 kanban-drop"></div>
                     </div>
                 </div>
             </div>
-        </section>
+
+            <!-- ANALYTICS DASHBOARD IN VIEW -->
+            <div class="border border-slate-800 bg-slate-950 p-4 shadow-xl operator-only">
+                <h3 class="border-b border-slate-800 pb-2 text-sm font-semibold uppercase text-slate-300">
+                    System Analytics & Performance
+                </h3>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- KPI Cards -->
+                    <div class="border border-slate-800 bg-slate-900 p-4 flex flex-col items-center justify-center">
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Avg Clearance
+                            Time</span>
+                        <span id="kpiAvgClearance" class="text-2xl text-emerald-400 font-mono mt-1">--</span>
+                        <span class="text-slate-400 text-[10px] mt-1">minutes</span>
+                    </div>
+                    <div class="border border-slate-800 bg-slate-900 p-4 flex flex-col items-center justify-center">
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">High Risk
+                            Incidents</span>
+                        <span id="kpiHighRisk" class="text-2xl text-red-400 font-mono mt-1">--</span>
+                        <span class="text-slate-400 text-[10px] mt-1">of session events</span>
+                    </div>
+                    <div class="border border-slate-800 bg-slate-900 p-4 flex flex-col items-center justify-center">
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Automated
+                            Dispatches</span>
+                        <span id="kpiDispatches" class="text-2xl text-blue-400 font-mono mt-1">0</span>
+                        <span class="text-slate-400 text-[10px] mt-1">units deployed</span>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="border border-slate-800 bg-slate-900 p-3 flex flex-col justify-between">
+                        <h4 class="text-[10px] font-semibold uppercase text-slate-400 mb-2">Clearance Time by Incident
+                            Type</h4>
+                        <div class="relative w-full h-32"><canvas id="barChart"></canvas></div>
+                    </div>
+                    <div class="border border-slate-800 bg-slate-900 p-3 flex flex-col justify-between">
+                        <h4 class="text-[10px] font-semibold uppercase text-slate-400 mb-2">Severity Distribution</h4>
+                        <div class="relative w-full h-32"><canvas id="pieChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="mt-4 border border-slate-800 bg-slate-900 p-3">
+                    <h4 class="text-[10px] font-semibold uppercase text-slate-400 mb-2">Session Incident Volume Trend
+                    </h4>
+                    <div class="relative w-full h-40"><canvas id="lineChart"></canvas></div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Restart Confirm Modal -->
-    <div id="restartConfirmModal" class="fixed inset-0 z-[2000] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+    <div id="restartConfirmModal"
+        class="fixed inset-0 z-[2000] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm">
         <div class="w-full max-w-sm border border-slate-700 bg-slate-900 p-6 shadow-2xl">
             <h3 class="mb-4 text-lg font-bold text-white uppercase">Restart Simulation?</h3>
-            <p class="mb-6 text-sm text-slate-300">Are you sure you want to restart the simulation? This will wipe all current tracker and ledger data.</p>
+            <p class="mb-6 text-sm text-slate-300">Are you sure you want to restart the simulation? This will wipe all
+                current tracker and ledger data.</p>
             <div class="flex justify-end gap-3">
-                <button type="button" id="restartCancel" class="border border-slate-600 px-4 py-2 text-xs font-bold uppercase text-slate-300 hover:bg-slate-800 transition">Cancel</button>
-                <button type="button" id="restartConfirm" class="bg-red-600 px-4 py-2 text-xs font-bold uppercase text-white hover:bg-red-500 transition">Restart</button>
+                <button type="button" id="restartCancel"
+                    class="border border-slate-600 px-4 py-2 text-xs font-bold uppercase text-slate-300 hover:bg-slate-800 transition">Cancel</button>
+                <button type="button" id="restartConfirm"
+                    class="bg-red-600 px-4 py-2 text-xs font-bold uppercase text-white hover:bg-red-500 transition">Restart</button>
             </div>
         </div>
     </div>
 
-    <div id="undoSnackbar" class="fixed bottom-4 right-4 z-[9999] hidden items-center gap-4 bg-slate-800 px-4 py-3 text-sm text-slate-200 shadow-2xl border border-slate-700">
+    <div id="undoSnackbar"
+        class="fixed bottom-4 right-4 z-[9999] hidden items-center gap-4 bg-slate-800 px-4 py-3 text-sm text-slate-200 shadow-2xl border border-slate-700">
         <span id="undoMessage" class="text-xs">Incident moved.</span>
-        <button id="undoBtn" class="font-bold text-amber-400 hover:text-amber-300 uppercase text-xs">Undo Action</button>
+        <button id="undoBtn" class="font-bold text-amber-400 hover:text-amber-300 uppercase text-xs">Undo
+            Action</button>
     </div>
 
     <div id="kanbanConfirmModal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/60">
         <div class="bg-slate-900 border border-slate-700 shadow-2xl p-6 max-w-sm w-full">
-            <h4 class="text-sm font-bold uppercase text-slate-200 border-b border-slate-700 pb-2">Confirm State Transition</h4>
-            <p id="confirmModalText" class="mt-3 text-xs text-slate-300">Are you sure you want to advance this incident?</p>
+            <h4 class="text-sm font-bold uppercase text-slate-200 border-b border-slate-700 pb-2">Confirm State
+                Transition</h4>
+            <p id="confirmModalText" class="mt-3 text-xs text-slate-300">Are you sure you want to advance this incident?
+            </p>
             <div class="mt-4 flex gap-3 justify-end">
-                <button id="confirmModalCancel" class="border border-slate-600 bg-slate-800 px-4 py-2 text-xs text-slate-300 hover:bg-slate-700 transition">Cancel</button>
-                <button id="confirmModalOk" class="bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition">Confirm</button>
+                <button id="confirmModalCancel"
+                    class="border border-slate-600 bg-slate-800 px-4 py-2 text-xs text-slate-300 hover:bg-slate-700 transition">Cancel</button>
+                <button id="confirmModalOk"
+                    class="bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition">Confirm</button>
             </div>
         </div>
     </div>
@@ -324,19 +487,24 @@
 
     <!-- Login Modal -->
     <div id="loginModal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/60">
-        <form id="loginForm" class="bg-slate-900 border border-slate-700 shadow-2xl p-6 max-w-xs w-full flex flex-col gap-4">
+        <form id="loginForm"
+            class="bg-slate-900 border border-slate-700 shadow-2xl p-6 max-w-xs w-full flex flex-col gap-4">
             <h4 class="text-sm font-bold uppercase text-slate-200 border-b border-slate-700 pb-2">Operator Login</h4>
             <label class="text-xs font-medium text-slate-400">
                 Username
-                <input id="loginUser" type="text" required class="mt-1 w-full border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
+                <input id="loginUser" type="text" required
+                    class="mt-1 w-full border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
             </label>
             <label class="text-xs font-medium text-slate-400">
                 Password
-                <input id="loginPass" type="password" required class="mt-1 w-full border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
+                <input id="loginPass" type="password" required
+                    class="mt-1 w-full border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
             </label>
             <div class="mt-2 flex gap-3 justify-end">
-                <button type="button" onclick="toggleAuthModal()" class="border border-slate-600 bg-slate-800 px-4 py-2 text-xs text-slate-300 hover:bg-slate-700 transition">Cancel</button>
-                <button type="submit" class="bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition">Login</button>
+                <button type="button" onclick="toggleAuthModal()"
+                    class="border border-slate-600 bg-slate-800 px-4 py-2 text-xs text-slate-300 hover:bg-slate-700 transition">Cancel</button>
+                <button type="submit"
+                    class="bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition">Login</button>
             </div>
         </form>
     </div>
@@ -356,7 +524,7 @@
                 <button onclick="this.parentElement.style.transform='translateX(120%)'; setTimeout(() => this.parentElement.remove(), 300)" class="text-slate-500 hover:text-slate-300">&times;</button>
             `;
             container.appendChild(toast);
-            
+
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     toast.style.transform = "translateX(0)";
@@ -376,7 +544,7 @@
         async function fetchRealTimeWeather() {
             const weatherSelect = document.getElementById("weatherContext").value;
             const display = document.getElementById("autoWeatherDisplay");
-            
+
             if (weatherSelect !== "auto") {
                 if (autoWeatherInterval) clearInterval(autoWeatherInterval);
                 display.textContent = "";
@@ -388,7 +556,7 @@
                 const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=12.9716&longitude=77.5946&current_weather=true");
                 const data = await res.json();
                 const code = data.current_weather.weathercode;
-                
+
                 if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82) || (code >= 95 && code <= 99)) {
                     display.textContent = "(Heavy Rain)";
                     display.className = "ml-2 text-[10px] text-red-400 font-bold";
@@ -442,21 +610,21 @@
                     const state = JSON.parse(stateJson);
                     kanbanState.clear();
                     state.kanbanState.forEach(([k, v]) => kanbanState.set(k, v));
-                    
+
                     kanbanItemData.clear();
                     state.kanbanItemData.forEach(([k, v]) => kanbanItemData.set(k, v));
-                    
+
                     operationLedger.clear();
                     state.operationLedger.forEach(([k, v]) => operationLedger.set(k, v));
-                    
+
                     operationLedgerData.length = 0;
                     state.operationLedgerData.forEach(item => {
                         item.trElement = createTrElement(item, null);
                         operationLedgerData.push(item);
                     });
-                    
+
                     orderCounter = state.orderCounter || 0;
-                    
+
                     renderKanban();
                     renderLedger();
                     if (document.getElementById("toggleGlobalView").checked) renderGlobalView();
@@ -599,7 +767,7 @@
             renderLedger();
         });
 
-        window.clearCustomMarker = function() {
+        window.clearCustomMarker = function () {
             if (customMarker) {
                 map.removeLayer(customMarker);
                 customMarker = null;
@@ -628,13 +796,13 @@
                 const safeType = ev.type ? ev.type.replace(/'/g, "\\'") : 'Unknown';
                 const safeCorridor = ev.corridor ? ev.corridor.replace(/'/g, "\\'") : 'Unknown';
                 const safeDuration = ev.formattedDuration ? ev.formattedDuration.replace(/'/g, "\\'") : '--';
-                
+
                 const safeAddress = ev.address ? ev.address.replace(/'/g, "\\'") : '';
                 const dispatchEtaStr = ev.dispatchEta ? ev.dispatchEta : 'null';
                 const dispatchDistStr = ev.dispatchDistance ? ev.dispatchDistance : 'null';
                 const safeCause = ev.cause ? ev.cause.replace(/'/g, "\\'") : 'Unknown';
                 const safeSeverity = ev.severity ? ev.severity.replace(/'/g, "\\'") : 'Unknown';
-                
+
                 const popupContent = `
                     <div class="text-xs max-w-[200px]">
                         <strong class="block text-sm uppercase">${ev.type}</strong>
@@ -647,15 +815,15 @@
                             Assign to Tracker
                         </button>
                     </div>`;
-                    
+
                 L.circleMarker([ev.lat, ev.lng], {
                     radius: 6,
                     fillColor: "#64748b",
                     color: "#0f172a",
                     weight: 1,
                     fillOpacity: 0.8
-                }).bindPopup(popupContent, { 
-                    autoPan: true, 
+                }).bindPopup(popupContent, {
+                    autoPan: true,
                     keepInView: true,
                     autoPanPadding: [20, 20]
                 }).addTo(globalMarkerGroup);
@@ -741,8 +909,8 @@
             if (sortedCorridors.length === 0) {
                 chokepointsList.innerHTML = "<li>No active corridor delays</li>";
             } else {
-                chokepointsList.innerHTML = sortedCorridors.map((c, i) => 
-                    `<li><span class="text-emerald-500 mr-1">${i+1}.</span> ${c[0]} <span class="text-slate-500">(${Math.round(c[1])}m total delay)</span></li>`
+                chokepointsList.innerHTML = sortedCorridors.map((c, i) =>
+                    `<li><span class="text-emerald-500 mr-1">${i + 1}.</span> ${c[0]} <span class="text-slate-500">(${Math.round(c[1])}m total delay)</span></li>`
                 ).join("");
             }
 
@@ -762,6 +930,99 @@
                     `;
                 }).join("");
             }
+
+            // --- FULL ANALYTICS DASHBOARD UPDATES ---
+            if (operationLedgerData.length === 0) {
+                if(document.getElementById('kpiAvgClearance')) document.getElementById('kpiAvgClearance').textContent = "--";
+                if(document.getElementById('kpiHighRisk')) document.getElementById('kpiHighRisk').textContent = "--";
+                if(document.getElementById('kpiDispatches')) document.getElementById('kpiDispatches').textContent = "0";
+                return;
+            }
+
+            let totalClearance = 0;
+            let validClearanceCount = 0;
+            let highRiskCount = 0;
+            let dispatchCount = 0;
+            let causeClearanceSum = {};
+            let causeClearanceCount = {};
+            let severityCounts = { "Low Impact": 0, "Moderate Delay": 0, "Severe Congestion Risk": 0 };
+            let timeGroups = {};
+
+            operationLedgerData.forEach(item => {
+                let mins = parseInt(item.minutes) || 0;
+                if (mins > 0) {
+                    totalClearance += mins;
+                    validClearanceCount++;
+
+                    let c = item.cause || "Unknown";
+                    if (!causeClearanceSum[c]) { causeClearanceSum[c] = 0; causeClearanceCount[c] = 0; }
+                    causeClearanceSum[c] += mins;
+                    causeClearanceCount[c]++;
+                }
+
+                if (item.severity === "Severe Congestion Risk" || (item.severity && item.severity.includes("Severe"))) {
+                    highRiskCount++;
+                }
+
+                let sev = item.severity || "Low Impact";
+                if (sev.includes("Severe")) sev = "Severe Congestion Risk";
+                else if (sev.includes("Moderate")) sev = "Moderate Delay";
+                else sev = "Low Impact";
+                severityCounts[sev] = (severityCounts[sev] || 0) + 1;
+
+                if (item.timestampBadge) {
+                    let timeStr = item.timestampBadge.split(" | ")[0]; // "HH:MM"
+                    if (timeStr) {
+                        let parts = timeStr.split(":");
+                        if (parts.length >= 2) {
+                            let hr = parts[0].padStart(2, '0');
+                            let bucketMin = Math.floor(parseInt(parts[1]) / 10) * 10;
+                            let bucket = `${hr}:${bucketMin.toString().padStart(2, '0')}`;
+                            timeGroups[bucket] = (timeGroups[bucket] || 0) + 1;
+                        }
+                    }
+                }
+            });
+
+            // Calculate actual units deployed via the Tactical Tracker
+            for (let phase of kanbanState.values()) {
+                if (phase >= 1) { // 1 = Response Unit Active, 2 = Resolved
+                    dispatchCount++;
+                }
+            }
+
+            const avgClearance = validClearanceCount > 0 ? (totalClearance / validClearanceCount).toFixed(1) : 0;
+            const highRiskPct = ((highRiskCount / operationLedgerData.length) * 100).toFixed(0);
+
+            if(document.getElementById('kpiAvgClearance')) document.getElementById('kpiAvgClearance').textContent = avgClearance;
+            if(document.getElementById('kpiHighRisk')) document.getElementById('kpiHighRisk').textContent = highRiskPct + "%";
+            if(document.getElementById('kpiDispatches')) document.getElementById('kpiDispatches').textContent = dispatchCount;
+
+            if (window.myBarChart) {
+                let barLabels = Object.keys(causeClearanceSum).map(c => c.replace(/_/g, " ").toUpperCase());
+                let barData = Object.keys(causeClearanceSum).map(c => causeClearanceSum[c] / causeClearanceCount[c]);
+                window.myBarChart.data.labels = barLabels;
+                window.myBarChart.data.datasets[0].data = barData;
+                window.myBarChart.update();
+            }
+
+            if (window.myPieChart) {
+                window.myPieChart.data.datasets[0].data = [
+                    severityCounts["Low Impact"] || 0,
+                    severityCounts["Moderate Delay"] || 0,
+                    severityCounts["Severe Congestion Risk"] || 0
+                ];
+                window.myPieChart.update();
+            }
+
+            if (window.myLineChart) {
+                let sortedBuckets = Object.keys(timeGroups).sort().slice(-10);
+                if (sortedBuckets.length === 0) sortedBuckets = ["Now"];
+                let lineData = sortedBuckets.map(b => timeGroups[b] || 0);
+                window.myLineChart.data.labels = sortedBuckets;
+                window.myLineChart.data.datasets[0].data = lineData;
+                window.myLineChart.update();
+            }
         }
 
         function renderLedger() {
@@ -775,7 +1036,7 @@
             filtered.sort((a, b) => {
                 let valA = a[currentSortKey];
                 let valB = b[currentSortKey];
-                
+
                 if (currentSortKey === 'id' || currentSortKey === 'type' || currentSortKey === 'severity') {
                     valA = valA.toString().toLowerCase();
                     valB = valB.toString().toLowerCase();
@@ -842,7 +1103,7 @@
 
             const estimate = document.createElement("strong");
             estimate.textContent = `Clear time: ${event.formatted_duration}`;
-            
+
             const dispatchP = document.createElement("p");
             dispatchP.className = "my-1 text-[10px] font-semibold text-blue-400";
             dispatchP.textContent = event.dispatch_eta ? `Dispatch ETA: ${event.dispatch_eta} mins (${event.dispatch_distance} km)` : "";
@@ -867,8 +1128,8 @@
                 <button type="button" onclick="clearCustomMarker()" class="mt-1 block w-full bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 font-bold uppercase text-[9px] py-1 px-2 rounded">
                     Remove Marker
                 </button>
-            `, { 
-                autoPan: true, 
+            `, {
+                autoPan: true,
                 keepInView: true,
                 autoPanPadding: [20, 20]
             }).openPopup();
@@ -890,15 +1151,15 @@
         let lastKanbanAction = null;
         let pendingConfirm = null;
 
-        function requestKanbanAdvance(id, targetPhase) {
+        function requestKanbanAdvance(id, targetPhase, agency = "Police") {
             const data = kanbanItemData.get(id);
             const currentPhase = kanbanState.get(id);
             if (currentPhase === undefined || targetPhase === currentPhase) return;
 
-            const phaseNames = ["Awaiting Dispatch", "Response Unit Active", "Incident Resolved"];
+            const phaseNames = { "-1": "Unverified", 0: "Awaiting Dispatch", 1: "Response Unit Active", 2: "Incident Resolved" };
             document.getElementById("confirmModalText").textContent =
-                `Move "${data.type}" from "${phaseNames[currentPhase]}" to "${phaseNames[targetPhase]}"?`;
-            pendingConfirm = { id, oldPhase: currentPhase, newPhase: targetPhase };
+                `Move "${data.type}" from "${phaseNames[currentPhase]}" to "${phaseNames[targetPhase]}"?` + (targetPhase === 1 ? ` Dispatching ${agency}.` : "");
+            pendingConfirm = { id, oldPhase: currentPhase, newPhase: targetPhase, agency };
             const modal = document.getElementById("kanbanConfirmModal");
             modal.classList.remove("hidden");
             modal.classList.add("flex");
@@ -913,9 +1174,10 @@
                     lastKanbanAction = { id: pendingConfirm.id, oldPhase: pendingConfirm.oldPhase };
                     kanbanState.set(pendingConfirm.id, pendingConfirm.newPhase);
                     showUndoSnackbar();
-                    
+
                     if (pendingConfirm.newPhase === 1 && pendingConfirm.oldPhase === 0) {
                         const id = pendingConfirm.id;
+                        const agency = pendingConfirm.agency;
                         setTimeout(() => {
                             const card = document.querySelector(`[data-kanban-id="${id}"]`);
                             if (card) {
@@ -932,14 +1194,15 @@
                                             incident_cause: cause,
                                             severity: severity,
                                             address: address,
-                                            eta: parseFloat(etaStr)
+                                            eta: parseFloat(etaStr),
+                                            agency: agency
                                         })
                                     }).then(res => res.json()).then(resData => {
                                         if (resData.status === 'success') {
                                             card.style.borderColor = '#3b82f6';
                                             const badge = document.createElement('span');
                                             badge.className = 'absolute bottom-1 right-1 text-[8px] font-bold text-blue-400 bg-blue-900/50 px-1 rounded';
-                                            badge.textContent = 'Alert Sent';
+                                            badge.textContent = `Alert Sent (${agency})`;
                                             card.appendChild(badge);
                                         }
                                     });
@@ -994,6 +1257,7 @@
         });
 
         function renderKanban() {
+            if (document.getElementById("kanbanUnverified")) document.getElementById("kanbanUnverified").innerHTML = "";
             document.getElementById("kanbanAwaiting").innerHTML = "";
             document.getElementById("kanbanActive").innerHTML = "";
             document.getElementById("kanbanResolved").innerHTML = "";
@@ -1012,13 +1276,23 @@
                     card.style.opacity = "0.5";
                 });
                 card.addEventListener("dragend", () => { card.style.opacity = "1"; });
-                
+
                 let btnHtml = "";
-                if (phase === 0) {
-                    btnHtml = `<button onclick="advanceKanban('${id}')" class="mt-2 w-full border border-slate-700 bg-slate-800 py-1 text-[10px] font-semibold text-amber-500 hover:bg-slate-700">Dispatch Unit &rarr;</button>`;
+                let sitRepBtn = `<button onclick="generateSitRep('${id}')" class="mt-1 w-full border border-purple-700 bg-purple-900/30 py-1 text-[9px] font-semibold text-purple-400 hover:bg-purple-800/50">✨ Generate Sit-Rep</button>`;
+
+                if (phase === -1) {
+                    btnHtml = `<button onclick="requestKanbanAdvance('${id}', 0)" class="mt-2 w-full border border-slate-700 bg-slate-800 py-1 text-[10px] font-semibold text-amber-500 hover:bg-slate-700">Verify Incident &rarr;</button>`;
+                    if (document.getElementById("kanbanUnverified")) document.getElementById("kanbanUnverified").appendChild(card);
+                } else if (phase === 0) {
+                    btnHtml = `<div class="mt-2 flex gap-1 justify-between flex-wrap">
+                                 <button onclick="requestKanbanAdvance('${id}', 1, 'Police')" class="flex-1 border border-slate-700 bg-slate-800 py-1 text-[9px] font-bold text-blue-400 hover:bg-slate-700" title="Dispatch Police">🚓 POLICE</button>
+                                 <button onclick="requestKanbanAdvance('${id}', 1, 'Fire')" class="flex-1 border border-slate-700 bg-slate-800 py-1 text-[9px] font-bold text-red-400 hover:bg-slate-700" title="Dispatch Fire">🚒 FIRE</button>
+                                 <button onclick="requestKanbanAdvance('${id}', 1, 'Ambulance')" class="flex-1 border border-slate-700 bg-slate-800 py-1 text-[9px] font-bold text-emerald-400 hover:bg-slate-700" title="Dispatch Ambulance">🚑 EMS</button>
+                                 <button onclick="requestKanbanAdvance('${id}', 1, 'Other')" class="flex-1 border border-slate-700 bg-slate-800 py-1 text-[9px] font-bold text-amber-400 hover:bg-slate-700" title="Dispatch Other">🛠 OTHER</button>
+                               </div>`;
                     document.getElementById("kanbanAwaiting").appendChild(card);
                 } else if (phase === 1) {
-                    btnHtml = `<button onclick="advanceKanban('${id}')" class="mt-2 w-full border border-slate-700 bg-slate-800 py-1 text-[10px] font-semibold text-emerald-500 hover:bg-slate-700">Resolve Incident &rarr;</button>`;
+                    btnHtml = sitRepBtn + `<button onclick="requestKanbanAdvance('${id}', 2)" class="mt-1 w-full border border-slate-700 bg-slate-800 py-1 text-[10px] font-semibold text-emerald-500 hover:bg-slate-700">Resolve Incident &rarr;</button>`;
                     document.getElementById("kanbanActive").appendChild(card);
                 } else if (phase === 2) {
                     btnHtml = `<span class="mt-2 block w-full text-center py-1 border border-slate-800 text-[10px] font-semibold text-slate-500">Completed</span>`;
@@ -1026,7 +1300,7 @@
                 }
 
                 let hotzoneBadge = data.isHotspot ? '<span class="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white shadow shadow-red-500/50 animate-pulse">H</span>' : '';
-                
+
                 let addressText = data.address ? data.address : (data.lat !== undefined ? `${data.lat.toFixed(4)}, ${data.lng.toFixed(4)}` : data.corridor);
                 let dispatchMetrics = data.dispatchEta ? `<span class="block mt-1 text-[9px] text-blue-300 font-medium">Dispatch Unit ETA: ${data.dispatchEta} mins (${data.dispatchDistance} km)</span>` : "";
 
@@ -1041,12 +1315,39 @@
                     <span class="hidden dispatch-cause">${data.cause || 'Unknown'}</span>
                     <span class="hidden dispatch-severity">${data.severity || 'Unknown'}</span>
                     <span class="hidden dispatch-eta">${data.dispatchEta !== undefined && data.dispatchEta !== null ? data.dispatchEta : ''}</span>
+                    <div id="sitrep-container-${id}" class="mt-2 hidden p-2 border border-purple-800 bg-purple-950/30 text-[9px] text-purple-200"></div>
                     ${btnHtml}
                 `;
             });
         }
 
-        window.removeFromKanban = function(id) {
+        window.generateSitRep = async function (id) {
+            const data = kanbanItemData.get(id);
+            if (!data) return;
+            const container = document.getElementById(`sitrep-container-${id}`);
+            container.classList.remove("hidden");
+            container.textContent = "Generating ✨...";
+            try {
+                const res = await fetch("/api/generate-sitrep", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        incident_type: data.cause || "Unknown",
+                        location: data.address || data.corridor || "Unknown",
+                        severity: data.severity || "Unknown",
+                        clearance_time: parseFloat(data.formattedDuration) || 30.0,
+                        weather: activeWeatherPayload || "clear",
+                        notes: data.description || ""
+                    })
+                });
+                const result = await res.json();
+                container.textContent = result.sitrep_text;
+            } catch (e) {
+                container.textContent = "Failed to generate Sit-Rep.";
+            }
+        };
+
+        window.removeFromKanban = function (id) {
             const data = kanbanItemData.get(id);
             document.getElementById("confirmModalText").textContent =
                 `Remove "${data ? data.type : id}" from the Tracker permanently?`;
@@ -1079,7 +1380,7 @@
         function createTrElement(item, targetMarker = null) {
             const isManual = item.id.startsWith("MANUAL-");
             const style = severityStyle(item.severity);
-            const weatherBadge = item.weatherAlert && item.weatherAlert.includes("CRITICAL") 
+            const weatherBadge = item.weatherAlert && item.weatherAlert.includes("CRITICAL")
                 ? `<span class="block mt-1 text-[9px] font-bold text-red-500">${item.weatherAlert}</span>` : "";
 
             const tr = document.createElement("tr");
@@ -1100,10 +1401,10 @@
 
             tr.querySelector('.assign-btn').addEventListener("click", (e) => {
                 e.stopPropagation();
-                assignToTracker(item.id, { 
-                    type: item.type, corridor: item.corridor, cause: item.cause, severity: item.severity, 
-                    formattedDuration: item.formattedDuration, isHotspot: item.is_hotspot, address: item.address, 
-                    dispatchEta: item.dispatchEta, dispatchDistance: item.dispatchDistance, lat: item.lat, lng: item.lng 
+                assignToTracker(item.id, {
+                    type: item.type, corridor: item.corridor, cause: item.cause, severity: item.severity,
+                    formattedDuration: item.formattedDuration, isHotspot: item.is_hotspot, address: item.address,
+                    dispatchEta: item.dispatchEta, dispatchDistance: item.dispatchDistance, lat: item.lat, lng: item.lng
                 });
                 const btn = e.target;
                 btn.textContent = "Assigned \u2713";
@@ -1113,7 +1414,7 @@
 
             tr.addEventListener("click", () => {
                 if (targetMarker && liveMarkers.hasLayer(targetMarker)) {
-                    liveMarkers.zoomToShowLayer(targetMarker, function() {
+                    liveMarkers.zoomToShowLayer(targetMarker, function () {
                         targetMarker.openPopup();
                     });
                 } else {
@@ -1121,14 +1422,14 @@
                     setCustomMarker(item.lat, item.lng, item.popupHtml);
                 }
             });
-            
+
             return tr;
         }
 
         function addLedgerEntry(id, type, corridor, cause, minutes, formattedDuration, severity, advisory, weatherAlertText, timestampBadge, lat, lng, popupHtml, targetMarker = null, isHotspot = false, address = null, dispatchEta = null, dispatchDistance = null) {
             if (operationLedger.has(id)) return;
             operationLedger.set(id, true);
-            
+
             const newItem = {
                 id,
                 type,
@@ -1149,7 +1450,7 @@
                 dispatchEta: dispatchEta,
                 dispatchDistance: dispatchDistance
             };
-            
+
             newItem.trElement = createTrElement(newItem, targetMarker);
             operationLedgerData.push(newItem);
 
@@ -1206,7 +1507,7 @@
                 const severityText = document.getElementById("severityText");
                 severityText.textContent = result.severity_level;
                 severityText.className = `border px-2 py-1 text-right text-xs ${style.classes}`;
-                
+
                 document.getElementById("advisoryText").textContent = result.action_advisory;
 
                 document.getElementById("addressText").textContent = result.address || "Unknown Address";
@@ -1233,23 +1534,23 @@
                     payload.longitude,
                     popupHtml
                 );
-                
+
                 const incidentType = `${payload.event_cause.replace(/_/g, " ")} - ${payload.vehicle_type.replace(/_/g, " ")}`;
                 const manualId = `MANUAL-${new Date().toLocaleTimeString().replace(/:/g, "").split(" ")[0]}`;
-                
+
                 addLedgerEntry(
-                    manualId, 
-                    incidentType, 
+                    manualId,
+                    incidentType,
                     payload.corridor,
                     payload.event_cause,
-                    result.predicted_duration_minutes, 
+                    result.predicted_duration_minutes,
                     result.formatted_duration,
-                    result.severity_level, 
-                    result.action_advisory, 
+                    result.severity_level,
+                    result.action_advisory,
                     result.weather_alert,
                     formatTimestamp(result.start_datetime),
-                    payload.latitude, 
-                    payload.longitude, 
+                    payload.latitude,
+                    payload.longitude,
                     popupHtml,
                     customMarker,
                     result.is_hotspot,
@@ -1257,7 +1558,7 @@
                     result.dispatch_eta,
                     result.dispatch_distance
                 );
-                
+
                 assignToTracker(manualId, { type: incidentType, corridor: payload.corridor, formattedDuration: result.formatted_duration, isHotspot: result.is_hotspot, address: result.address, dispatchEta: result.dispatch_eta, dispatchDistance: result.dispatch_distance, lat: payload.latitude, lng: payload.longitude });
             } catch (error) {
                 showToast(`Prediction failed: ${error.message}`);
@@ -1279,7 +1580,7 @@
             refreshButton.disabled = true;
 
             const container = document.getElementById("liveAlerts");
-            
+
             try {
                 const response = await fetch(`/api/live-events?weather=${activeWeatherPayload}`, { cache: "no-store" });
                 const data = await response.json();
@@ -1304,15 +1605,15 @@
 
                     const headerRow = document.createElement("div");
                     headerRow.className = "flex justify-between items-start mb-1";
-                    
+
                     const heading = document.createElement("span");
                     heading.className = "text-xs font-bold uppercase";
                     heading.textContent = incident.event_cause;
-                    
+
                     const timeBadge = document.createElement("span");
                     timeBadge.className = "text-[10px] font-mono text-emerald-400";
                     timeBadge.textContent = formatTimestamp(incident.start_datetime);
-                    
+
                     headerRow.append(heading, timeBadge);
 
                     const location = document.createElement("span");
@@ -1353,10 +1654,10 @@
                         }
                     ).addTo(liveMarkers);
                     marker._incidentId = incident.id;
-                    
+
                     const popupElement = createPopup(incident);
-                    marker.bindPopup(popupElement, { 
-                        autoPan: true, 
+                    marker.bindPopup(popupElement, {
+                        autoPan: true,
                         keepInView: true,
                         autoPanPadding: [20, 20]
                     });
@@ -1366,14 +1667,14 @@
                     }
 
                     card.addEventListener("click", () => {
-                        liveMarkers.zoomToShowLayer(marker, function() {
+                        liveMarkers.zoomToShowLayer(marker, function () {
                             marker.openPopup();
                         });
                     });
-                    
+
                     card.style.cursor = "pointer";
                     container.insertBefore(card, container.firstChild);
-                    
+
                     addLedgerEntry(
                         incident.id,
                         `${incident.event_cause} - ${incident.vehicle_type}`,
@@ -1444,13 +1745,13 @@
                 const params = new URLSearchParams();
                 params.append("username", u);
                 params.append("password", p);
-                
+
                 const res = await fetch("/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: params
                 });
-                
+
                 if (!res.ok) throw new Error("Invalid credentials");
                 const data = await res.json();
                 localStorage.setItem("meridian_auth", data.access_token);
@@ -1467,21 +1768,21 @@
         function applyAuthView() {
             const isAuth = !!localStorage.getItem("meridian_auth");
             document.getElementById("authBtn").textContent = isAuth ? "LOGOUT" : "LOGIN";
-            
+
             // Toggle visibility of operator-only elements
             document.querySelectorAll(".operator-only").forEach(el => {
-                el.style.display = isAuth ? "" : "none"; // Using empty string to revert to natural display property
+                el.style.display = isAuth ? "" : "none";
             });
-            
-            // Adjust main grid columns if form is hidden
+
+            // Toggle visibility of citizen-only elements
+            document.querySelectorAll(".citizen-only").forEach(el => {
+                el.style.display = isAuth ? "none" : "";
+            });
+
+            // Adjust main grid columns (always keep 12 cols, as the aside is swapped)
             const mainGrid = document.querySelector("main");
-            if (isAuth) {
-                mainGrid.classList.add("lg:grid-cols-12");
-                mainGrid.classList.remove("lg:grid-cols-9");
-            } else {
-                mainGrid.classList.remove("lg:grid-cols-12");
-                mainGrid.classList.add("lg:grid-cols-9"); // Adjust ratio when aside is gone
-            }
+            mainGrid.classList.add("lg:grid-cols-12");
+            mainGrid.classList.remove("lg:grid-cols-9");
 
             // Fix Leaflet gray areas when container size changes
             setTimeout(() => {
@@ -1493,7 +1794,7 @@
 
         // Initialize auth view on load
         applyAuthView();
-        
+
         // Load persistent state
         loadState();
 
@@ -1501,7 +1802,180 @@
         refreshLiveFeed();
         setInterval(() => {
             if (!document.hidden) refreshLiveFeed();
+            if (localStorage.getItem("meridian_auth")) fetchCitizenReports();
         }, 12000);
+
+        // Citizen Reporting Logic
+        document.getElementById("citizenReportForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector("button[type='submit']");
+            btn.disabled = true;
+            btn.textContent = "Submitting...";
+
+            try {
+                const payload = {
+                    latitude: 12.9716 + (Math.random() - 0.5) * 0.1, // Simulated location
+                    longitude: 77.5946 + (Math.random() - 0.5) * 0.1,
+                    incident_type: document.getElementById("citizenIncidentType").value,
+                    severity: document.getElementById("citizenSeverity").value,
+                    description: document.getElementById("citizenDescription").value
+                };
+
+                const res = await fetch("/api/incidents/report", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    document.getElementById("citizenReportForm").reset();
+                    document.getElementById("citizenSuccess").classList.remove("hidden");
+                    setTimeout(() => document.getElementById("citizenSuccess").classList.add("hidden"), 5000);
+                } else {
+                    throw new Error("Failed to submit");
+                }
+            } catch (err) {
+                alert("Error submitting report: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Submit Report";
+            }
+        });
+
+        const seenCitizenReports = new Set();
+        async function fetchCitizenReports() {
+            try {
+                const res = await fetch("/api/incidents/reports");
+                const data = await res.json();
+                if (data.status === "success") {
+                    data.reports.forEach(report => {
+                        if (!seenCitizenReports.has(report.id) && !kanbanState.has(report.id)) {
+                            seenCitizenReports.add(report.id);
+                            // Add to unverified kanban (-1)
+                            kanbanState.set(report.id, -1);
+                            kanbanItemData.set(report.id, {
+                                type: "Citizen: " + report.incident_type,
+                                corridor: "Citizen App",
+                                cause: report.incident_type,
+                                severity: report.severity,
+                                formattedDuration: "-- (Pending Verify)",
+                                isHotspot: false,
+                                address: "Unknown (Citizen)",
+                                lat: report.latitude,
+                                lng: report.longitude,
+                                description: report.description
+                            });
+                            renderKanban();
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to fetch citizen reports", e);
+            }
+        }
+
+        // --- Analytics Chart.js Rendering ---
+        try {
+            if (typeof ChartDataLabels !== 'undefined') {
+                Chart.register(ChartDataLabels);
+            }
+
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            window.myBarChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Vehicle Breakdown', 'Accident', 'Water Logging', 'Tree Fall', 'Construction'],
+                    datasets: [{
+                        label: 'Avg Clearance Time (mins)',
+                        data: [25, 55, 120, 90, 45],
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                        x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', font: { size: 9 } } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: { display: false }
+                    }
+                }
+            });
+
+            const ctxPie = document.getElementById('pieChart').getContext('2d');
+            window.myPieChart = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Low Impact', 'Moderate', 'Severe'],
+                    datasets: [{
+                        data: [45, 31, 24],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
+                        ],
+                        borderColor: '#0f172a',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#cbd5e1', boxWidth: 10, font: { size: 9 } } },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: (value, ctx) => {
+                                let sum = 0;
+                                let dataArr = ctx.chart.data.datasets[0].data;
+                                dataArr.forEach(data => { sum += data; });
+                                return (value * 100 / sum).toFixed(0) + "%";
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctxLine = document.getElementById('lineChart').getContext('2d');
+            window.myLineChart = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Reported Incidents',
+                        data: [120, 150, 140, 200, 280, 190, 110],
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                        x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', font: { size: 9 } } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: { display: false }
+                    }
+                }
+            });
+            
+            // Sync charts with loaded state
+            updateAnalytics();
+        } catch (e) {
+            console.error("Failed to render charts:", e);
+        }
     </script>
 </body>
+
 </html>

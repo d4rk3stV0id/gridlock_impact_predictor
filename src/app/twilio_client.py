@@ -4,7 +4,7 @@ from src.app.config import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NU
 
 logger = logging.getLogger(__name__)
 
-async def send_dispatch_alert(incident_cause: str, severity: str, address: str, eta: int | float) -> bool:
+async def send_dispatch_alert(incident_cause: str, severity: str, address: str, eta: int | float, agency: str = "Police") -> bool:
     """
     Send an automated WhatsApp dispatch alert via Twilio REST API.
     """
@@ -13,7 +13,14 @@ async def send_dispatch_alert(incident_cause: str, severity: str, address: str, 
         return False
         
     url = f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_ACCOUNT_SID}/Messages.json"
-    message = f"🚨 MERIDIAN DISPATCH: {severity} {incident_cause} reported at {address}. Unit ETA: {eta} mins."
+    
+    # Custom message formatting based on agency
+    if agency.lower() == "fire":
+        message = f"🚒 MERIDIAN FIRE DISPATCH: {severity} {incident_cause} reported at {address}. Unit ETA: {eta} mins. Proceed with caution."
+    elif agency.lower() == "ambulance":
+        message = f"🚑 MERIDIAN EMS DISPATCH: {severity} {incident_cause} at {address}. Medical assistance required. Unit ETA: {eta} mins."
+    else:
+        message = f"🚓 MERIDIAN POLICE DISPATCH: {severity} {incident_cause} reported at {address}. Secure the scene. Unit ETA: {eta} mins."
     
     payload = {
         "From": TWILIO_FROM_NUMBER,
